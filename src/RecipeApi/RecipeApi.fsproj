@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Database.fs" />
+    <Compile Include="Config.fs" />
+
+    <Compile Include="Templates\App.fs" />
+    <Compile Include="Templates\Index.fs" />
+    <Compile Include="Templates\NotFound.fs" />
+    <Compile Include="Templates\InternalError.fs" />
+
+    <Compile Include="Ingredients\IngredientsModel.fs" />
+    <Compile Include="Ingredients\IngredientsRepository.fs" />
+    <Compile Include="Ingredients\IngredientsController.fs" />
+    <Compile Include="IngredientCategories\IngredientCategoriesModel.fs" />
+    <Compile Include="IngredientCategories\IngredientCategoriesRepository.fs" />
+    <Compile Include="IngredientCategories\IngredientCategoriesController.fs" />
+    <Compile Include="Recipes\RecipesModel.fs" />
+    <Compile Include="Recipes\RecipesRepository.fs" />
+    <Compile Include="Recipes\RecipesController.fs" />
+    <Compile Include="Router.fs" />
+    <Compile Include="Program.fs" />
+
+    <Content Include="static\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="*.sqlite">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <Import Project="..\..\.paket\Paket.Restore.targets" />
+</Project>

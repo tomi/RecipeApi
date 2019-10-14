@@ -1,5 +1,21 @@
 namespace Recipes
 
+[<CLIMutable>]
+type RecipeIngredientRow =
+    { recipeId: int
+      ingredientId: int
+      modifier: string
+      quantity: double
+      unit: string }
+
+[<CLIMutable>]
+type RecipeIngredient =
+    { ingredientId: int
+      nameFi: string
+      nameEn: string
+      modifier: string
+      quantity: double
+      unit: string }
 
 [<CLIMutable>]
 type Recipe =
@@ -9,7 +25,8 @@ type Recipe =
       durationMin: int
       durationMax: int
       origin: string
-      steps: string array }
+      steps: string array
+      ingredients: RecipeIngredient array }
 
 [<CLIMutable>]
 type RecipeIngredientDto =

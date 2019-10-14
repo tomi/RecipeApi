@@ -1,15 +1,50 @@
 namespace Recipes
 
 open Database
+open Dapper
 open System.Threading.Tasks
 open FSharp.Control.Tasks.ContextInsensitive
+
+open Ingredients
 
 module Database =
     let getAll connectionString: Task<Result<Recipe seq, exn>> =
         task {
             use connection = getConnection (connectionString)
-            return! query connection "SELECT id, nameFi, nameEn, durationMin, durationMax, origin, steps FROM Recipes"
-                        None
+            let sql = @"
+SELECT
+    Recipes.*,
+    RecipeIngredients.ingredientId as id,
+    RecipeIngredients.*,
+    Ingredients.*
+FROM Recipes
+JOIN RecipeIngredients ON RecipeIngredients.recipeId = Recipes.id
+JOIN Ingredients ON Ingredients.id = RecipeIngredients.ingredientId
+"
+            let! res = connection.QueryAsync(sql, (fun (recipe: Recipe) (recipeIngredient: RecipeIngredientRow) (ingredient: Ingredient) ->
+                (recipe, recipeIngredient, ingredient)
+            ))
+
+            let firstOfThree (a, _, _) = a
+
+            let recipes = res
+                        |> Seq.groupBy (fun (recipe, _, _) -> recipe.id)
+                        |> Seq.map (fun (_, rows) ->
+                            let firstRow = Seq.head rows
+                            let recipe = firstOfThree firstRow
+                            let ingredients = rows |> Seq.map (fun (_, b, c) -> {
+                                ingredientId = b.ingredientId
+                                nameFi = c.nameFi
+                                nameEn = c.nameEn
+                                modifier = b.modifier
+                                quantity = b.quantity
+                                unit = b.unit
+                            })
+
+                            { recipe with
+                                ingredients = ingredients |> Seq.toArray })
+
+            return Ok recipes
         }
 
     let getById connectionString id: Task<Result<Recipe option, exn>> =
@@ -50,16 +85,11 @@ INSERT INTO RecipeIngredients
 
             let trx = connection.BeginTransaction()
 
-            let mapped = {|
-                v with
-                    steps = System.String.Join("\n\n", v.steps)
-            |}
-
             // Create the recipe itself
             let! result = insert connection @"
 INSERT INTO Recipes
 (nameFi, nameEn, durationMin, durationMax, origin, steps) VALUES
-(@nameFi, @nameEn, @durationMin, @durationMax, @origin, @steps) RETURNING id" mapped
+(@nameFi, @nameEn, @durationMin, @durationMax, @origin, @steps) RETURNING id" v
 
             // Overcome the fact that I don't know how to embed this
             // into the match expression

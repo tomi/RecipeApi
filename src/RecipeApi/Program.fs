@@ -13,7 +13,7 @@ let app =
     application {
         pipe_through endpointPipe
 
-        error_handler (fun ex _ -> pipeline { render_html (InternalError.layout ex) })
+        error_handler (fun ex _ -> pipeline { json ex })
         use_router Router.appRouter
         url "http://0.0.0.0:8085/"
         memory_cache
